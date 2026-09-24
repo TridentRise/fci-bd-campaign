@@ -19,8 +19,9 @@ const SALT="tm2u/sVRV1VjCtE7s4KRLg==", NONCE="pewpnWWa7I19HPca", DATA="4rdwwocoB
 const b2a=b=>Uint8Array.from(atob(b),c=>c.charCodeAt(0));
 async function getKey(pw){const km=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
 return crypto.subtle.deriveKey({name:"PBKDF2",salt:b2a(SALT),iterations:ITER,hash:"SHA-256"},km,{name:"AES-GCM",length:256},true,["decrypt"]);}
-async function tryKey(key){const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b2a(NONCE)},key,b2a(DATA));
-document.open();document.write(new TextDecoder().decode(pt));document.close();}
+async function tryKey(key){const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b2a(NONCE)},key,b2a(DATA));const html=new TextDecoder().decode(pt);
+const go=()=>setTimeout(()=>{document.open();document.write(html);document.close();},0);
+if(document.readyState==="complete")go();else window.addEventListener("load",go,{once:true});}
 async function unlock(pw){try{const key=await getKey(pw);const raw=await crypto.subtle.exportKey("raw",key);
 localStorage.setItem("fci_k",btoa(String.fromCharCode(...new Uint8Array(raw))));await tryKey(key);
 }catch(e){document.getElementById("err").style.display="block";}}
